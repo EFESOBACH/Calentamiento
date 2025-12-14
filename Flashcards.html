@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards: Activación Corporal y Habilidades</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=Open+Sans:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background: linear-gradient(135deg, #1e293b 0%, #3b82f6 100%); /* Dark Blue Theme */
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            margin: 0;
+            color: white;
+        }
+
+        /* 3D Card Container */
+        .scene {
+            width: 340px;
+            height: 520px;
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card__face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 24px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border: 4px solid white;
+        }
+
+        /* Front Face Style */
+        .card__face--front {
+            background: white;
+            color: #1e293b;
+        }
+
+        /* Back Face Style */
+        .card__face--back {
+            background: #1e293b;
+            color: white;
+            transform: rotateY(180deg);
+            border-color: #3b82f6;
+        }
+
+        .category-tag {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Categorías de Color */
+        .cat-concepto { background-color: #f3f4f6; color: #4b5563; }
+        .cat-fase1 { background-color: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; } /* Azul */
+        .cat-fase2 { background-color: #fce7f3; color: #be185d; border: 1px solid #f9a8d4; } /* Rosa */
+        .cat-fase3 { background-color: #dcfce7; color: #15803d; border: 1px solid #86efac; } /* Verde */
+        .cat-fase4 { background-color: #fef3c7; color: #b45309; border: 1px solid #fcd34d; } /* Amarillo */
+        .cat-social { background-color: #f3e8ff; color: #7e22ce; border: 1px solid #d8b4fe; } /* Morado */
+
+        .card-icon {
+            font-size: 4.5rem;
+            margin-bottom: 25px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+        }
+
+        .card-title {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            line-height: 1.3;
+            font-weight: 600;
+        }
+
+        .card-text {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .hint {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-5px);}
+            60% {transform: translateY(-3px);}
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+            margin-top: 10px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: white;
+            color: #3b82f6;
+            transform: scale(1.1);
+            border-color: white;
+        }
+
+        .btn-shuffle {
+            width: auto;
+            padding: 0 25px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        .progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            max-width: 340px;
+            height: 6px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #60a5fa;
+            width: 0%;
+            transition: width 0.3s ease-out;
+            box-shadow: 0 0 10px #60a5fa;
+        }
+
+        .counter {
+            font-size: 0.9rem;
+            font-weight: bold;
+            opacity: 0.9;
+        }
+
+        /* Responsive */
+        @media (max-height: 700px) {
+            .scene { height: 420px; width: 300px; }
+            .card-icon { font-size: 3.5rem; margin-bottom: 15px; }
+            .card-title { font-size: 1.2rem; }
+            .card-text { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress-container">
+        <div class="progress-bar-bg">
+            <div class="progress-fill" id="progress"></div>
+        </div>
+        <div class="counter">
+            Tarjeta <span id="current-idx">1</span> de <span id="total-idx">50</span>
+        </div>
+    </div>
+
+    <div class="scene">
+        <div class="card" onclick="flipCard()">
+            <!-- Front Face -->
+            <div class="card__face card__face--front">
+                <span class="category-tag" id="cat-front">CATEGORÍA</span>
+                <div class="card-icon" id="icon-front">❓</div>
+                <h2 class="card-title" id="title-front">Pregunta</h2>
+                <div class="hint">👆 Toca para ver la respuesta</div>
+            </div>
+
+            <!-- Back Face -->
+            <div class="card__face card__face--back">
+                <span class="category-tag" id="cat-back">RESPUESTA</span>
+                <div class="card-icon" id="icon-back">💡</div>
+                <p class="card-text" id="text-back">Respuesta</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="prevCard()" title="Anterior"><i class="fas fa-arrow-left"></i></button>
+        <button class="btn btn-shuffle" onclick="shuffleCards()" title="Barajar"><i class="fas fa-random mr-2"></i> Barajar</button>
+        <button class="btn" onclick="nextCard()" title="Siguiente"><i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <script>
+        // --- DATASET: 50 Flashcards from Prompt ---
+        const flashcards = [
+            // CONCEPTOS GENERALES
+            { cat: "Concepto", q: "¿Qué es la activación corporal (calentamiento)?", a: "Rutina para subir temperatura mezclando fuerza, equilibrio y estiramientos.", icon: "🔥" },
+            { cat: "Concepto", q: "¿Cuál es el objetivo número uno de la activación corporal?", a: "Reducir el riesgo de lesiones.", icon: "🛡️" },
+            { cat: "Concepto", q: "¿En qué porcentaje reduce el riesgo de lesiones un buen calentamiento?", a: "Lo reduce en un 36%.", icon: "📉" },
+            { cat: "Concepto", q: "¿Qué analogía se usa para explicar la necesidad de calentar los músculos?", a: "Goma de borrar congelada: fría se rompe, caliente es flexible.", icon: "❄️" },
+            { cat: "Concepto", q: "¿Qué sistemas se ponen en alerta para mejorar el rendimiento?", a: "Muscular, neurológico, cardiovascular y psicológico.", icon: "🧠" },
+            { cat: "Concepto", q: "¿Qué es el Entrenamiento Neuromuscular?", a: "Combinar capacidades para activar músculos y mejorar estabilidad.", icon: "⚡" },
+            { cat: "Concepto", q: "¿Qué sucede con los músculos al subir la temperatura? (Efecto 'Chicle')", a: "Se vuelven menos viscosos (pegajosos) y más elásticos.", icon: "🍬" },
+            { cat: "Concepto", q: "¿Qué líquido liberan las articulaciones al calentar?", a: "Líquido sinovial (lubricante natural).", icon: "💧" },
+            { cat: "Concepto", q: "¿Qué capacidad física mejora la fuerza en el calentamiento?", a: "La velocidad (Sprint y agilidad).", icon: "🐆" },
+            { cat: "Concepto", q: "¿Qué beneficio mental proporciona el calentamiento?", a: "Ansiolítico natural: baja preocupaciones y calma nervios.", icon: "😌" },
+            { cat: "Concepto", q: "¿Qué es el efecto PAPE?", a: "Un 'turbo' de fuerza explosiva tras ejercicios intensos.", icon: "🚀" },
+            { cat: "Concepto", q: "¿Qué capacidad mejora la combinación de fuerza, equilibrio y coordinación?", a: "Control motor y propiocepción.", icon: "🎯" },
+            { cat: "Concepto", q: "¿Qué beneficia la combinación de fuerza y multisaltos?", a: "Potencia explosiva y capacidad de salto.", icon: "💥" },
+            { cat: "Concepto", q: "¿Qué capacidad mejora la Movilidad Articular?", a: "Flexibilidad para movimientos complejos.", icon: "🤸" },
+            { cat: "Concepto", q: "¿Qué capacidad se relaciona con la mejora del rendimiento aeróbico?", a: "La Resistencia.", icon: "🫀" },
+
+            // FASE 1
+            { cat: "Fase 1", q: "Nombre de la Fase 1", a: "Movilidad Articular y Conciencia Corporal.", icon: "1️⃣" },
+            { cat: "Fase 1", q: "Objetivo de la Fase 1", a: "Movilización, conciencia postural y corrección.", icon: "🧘" },
+            { cat: "Fase 1", q: "Foco principal de los ejercicios en Fase 1", a: "De tobillos hacia arriba, conciencia pélvica y equilibrio.", icon: "⬆️" },
+            { cat: "Fase 1", q: "¿Qué contrarresta la Fase 1?", a: "El sedentarismo (movilización pélvica y escápulo-humeral).", icon: "🛋️" },
+            { cat: "Fase 1", q: "Menciona tres ejercicios de Movilidad", a: "Tobillo, Rodilla y Cadera (o Columna, Hombros, Cuello).", icon: "🦴" },
+
+            // FASE 2
+            { cat: "Fase 2", q: "Nombre de la Fase 2", a: "Fortalecimiento (Activación Neuromuscular).", icon: "2️⃣" },
+            { cat: "Fase 2", q: "Objetivo de la Fase 2", a: "Activar musculatura clave sin desplazamiento (prevenir lesiones).", icon: "🧱" },
+            { cat: "Fase 2", q: "Foco principal de los ejercicios en Fase 2", a: "Activación de Piernas, Brazos y CORE.", icon: "💪" },
+            { cat: "Fase 2", q: "Tres capacidades fundamentales de la Fase 2", a: "Fuerza, Coordinación y Equilibrio.", icon: "⚖️" },
+            { cat: "Fase 2", q: "Menciona tres ejercicios de Autocarga", a: "Sentadilla, Zancada y Plancha (o Escalador, Superman).", icon: "🏋️" },
+            { cat: "Fase 2", q: "¿Por qué es sustancial la activación neuromuscular?", a: "Para favorecer la reducción de lesiones.", icon: "🚑" },
+
+            // FASE 3
+            { cat: "Fase 3", q: "Nombre de la Fase 3", a: "Pliometría (Alta Intensidad).", icon: "3️⃣" },
+            { cat: "Fase 3", q: "Objetivo de la Fase 3", a: "Maximizar frecuencia cardíaca (FC) y respiratoria (FR).", icon: "💓" },
+            { cat: "Fase 3", q: "Foco principal de los ejercicios en Fase 3", a: "Intensidad máxima con multisaltos.", icon: "🐇" },
+            { cat: "Fase 3", q: "Dos capacidades fundamentales de la Fase 3", a: "Resistencia Cardiorrespiratoria y Coordinación.", icon: "🌬️" },
+            { cat: "Fase 3", q: "Menciona tres ejercicios de Pliometría", a: "Skipping, Jumping Jacks, Salto lateral (o Talones glúteo).", icon: "👟" },
+
+            // FASE 4
+            { cat: "Fase 4", q: "Nombre de la Fase 4", a: "Estiramientos Dinámicos.", icon: "4️⃣" },
+            { cat: "Fase 4", q: "Objetivo de la Fase 4", a: "Aumentar flexibilidad dinámica y rango de movimiento.", icon: "📏" },
+            { cat: "Fase 4", q: "Característica clave de la Fase 4", a: "Posición final NO mantenida (movimientos controlados).", icon: "🚫" },
+            { cat: "Fase 4", q: "Dos capacidades fundamentales de la Fase 4", a: "Flexibilidad y Equilibrio.", icon: "🦢" },
+            { cat: "Fase 4", q: "Menciona tres ejercicios de Estiramiento Dinámico", a: "Cuádriceps, Isquiosurales y Glúteos (Dinámicos).", icon: "🦵" },
+
+            // HABILIDADES SOCIOEMOCIONALES
+            { cat: "Social", q: "Habilidad: 'No miente sobre su desempeño. Es sincero'", a: "Honestidad.", icon: "🤝" },
+            { cat: "Social", q: "Habilidad: 'Se pone en el lugar del otro'", a: "Empatía.", icon: "❤️" },
+            { cat: "Social", q: "Habilidad: 'Organiza, anima y es ejemplo'", a: "Liderazgo.", icon: "📢" },
+            { cat: "Social", q: "Habilidad: 'Cuida personas y material'", a: "Respeto.", icon: "🙏" },
+            { cat: "Social", q: "Habilidad Volitiva: 'Se esfuerza a pesar del cansancio'", a: "Perseverancia.", icon: "🥵" },
+            { cat: "Social", q: "Habilidad Volitiva: 'Cumple con su rol y plazos'", a: "Responsabilidad.", icon: "✅" },
+            { cat: "Social", q: "¿Qué actitud fomenta la Interacción Promotora?", a: "Corregirse mutuamente la técnica y ofrecer apoyo.", icon: "🗣️" },
+            { cat: "Social", q: "Habilidad: 'Anima y mantiene clima positivo'", a: "Motivación.", icon: "🎉" },
+            { cat: "Social", q: "¿Qué promueve el diario de seguimiento?", a: "Reflexión y conciencia sobre comportamientos.", icon: "📓" },
+            { cat: "Social", q: "¿Qué ambiente crea crear rutinas juntos?", a: "Conexión, inclusión y compañerismo.", icon: "🤗" },
+            { cat: "Social", q: "¿Qué madurez adquieren con el reparto de notas?", a: "Asertividad y empatía.", icon: "🌱" },
+            { cat: "Social", q: "¿Nivel de desempeño más bajo (16-31 pts)?", a: "INSUFICIENTE (El Lastre).", icon: "⚓" },
+            { cat: "Social", q: "¿Objetivo emocional del desafío final?", a: "Gestionar emociones y cooperar.", icon: "🎭" },
+            { cat: "Social", q: "¿Nivel de desempeño más alto (60-64 pts)?", a: "EXCELENCIA (El Líder).", icon: "👑" }
+        ];
+
+        let currentIndex = 0;
+        const cardElement = document.querySelector('.card');
+        const tagElement = document.getElementById('cat-front');
+        const tagBackElement = document.getElementById('cat-back');
+
+        // Initial Load
+        updateCard();
+        document.getElementById('total-idx').innerText = flashcards.length;
+
+        function updateCard() {
+            const item = flashcards[currentIndex];
+            
+            // Front
+            document.getElementById('cat-front').innerText = item.cat.toUpperCase();
+            document.getElementById('icon-front').innerText = item.icon;
+            document.getElementById('title-front').innerText = item.q;
+            
+            // Back
+            document.getElementById('cat-back').innerText = item.cat.toUpperCase(); // Or "RESPUESTA"
+            document.getElementById('icon-back').innerText = "✅";
+            document.getElementById('text-back').innerText = item.a;
+
+            // Apply Color Styles based on category
+            applyCategoryStyle(item.cat, tagElement);
+            applyCategoryStyle(item.cat, tagBackElement);
+
+            // Reset Flip
+            cardElement.classList.remove('is-flipped');
+            
+            // Update Progress
+            document.getElementById('current-idx').innerText = currentIndex + 1;
+            const pct = ((currentIndex + 1) / flashcards.length) * 100;
+            document.getElementById('progress').style.width = `${pct}%`;
+        }
+
+        function applyCategoryStyle(category, element) {
+            // Reset classes
+            element.className = 'category-tag';
+            
+            if (category.includes('Fase 1')) element.classList.add('cat-fase1');
+            else if (category.includes('Fase 2')) element.classList.add('cat-fase2');
+            else if (category.includes('Fase 3')) element.classList.add('cat-fase3');
+            else if (category.includes('Fase 4')) element.classList.add('cat-fase4');
+            else if (category.includes('Social')) element.classList.add('cat-social');
+            else element.classList.add('cat-concepto');
+        }
+
+        function flipCard() {
+            cardElement.classList.toggle('is-flipped');
+        }
+
+        function nextCard() {
+            if (currentIndex < flashcards.length - 1) {
+                currentIndex++;
+                updateCard();
+            } else {
+                currentIndex = 0; // Loop
+                updateCard();
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+            }
+        }
+
+        function shuffleCards() {
+            // Fisher-Yates Shuffle
+            for (let i = flashcards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [flashcards[i], flashcards[j]] = [flashcards[j], flashcards[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+        }
+
+        // Keyboard Support
+        document.addEventListener('keydown', (e) => {
+            if(e.code === 'Space' || e.code === 'ArrowUp') flipCard();
+            if(e.code === 'ArrowRight') nextCard();
+            if(e.code === 'ArrowLeft') prevCard();
+        });
+    </script>
+</body>
+</html>
