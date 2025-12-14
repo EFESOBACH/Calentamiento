@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diario de Seguimiento: Evaluador Rotativo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Open+Sans:wght@400;600&display=swap');
+        
+        body { font-family: 'Open Sans', sans-serif; background-color: #f3f4f6; }
+        h1, h2, h3, h4 { font-family: 'Montserrat', sans-serif; }
+
+        /* Estilo compacto para los botones de puntuación */
+        .score-btn {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 1px solid #d1d5db;
+            background-color: white;
+            color: #6b7280;
+            font-size: 0.7rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.1s;
+        }
+
+        .score-btn:hover { background-color: #f3f4f6; }
+
+        .score-btn.selected {
+            border-color: transparent;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transform: scale(1.1);
+        }
+
+        /* Colores según columna */
+        .col-self .score-btn.selected { background-color: #2563eb; } /* Blue - Self */
+        .col-peer .score-btn.selected { background-color: #059669; } /* Green - Peer */
+
+        .skill-row:nth-child(even) { background-color: #f9fafb; }
+        
+        /* Ocultar en impresión */
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white; padding: 0; }
+            .shadow-lg { box-shadow: none; }
+            input { border: none; border-bottom: 1px solid #ccc; font-weight: bold; }
+            .score-btn { border: 1px solid #000; color: #000; }
+            .score-btn.selected { background-color: #ddd !important; color: black !important; -webkit-print-color-adjust: exact; }
+            /* Forzar colores de fondo en impresión */
+            .bg-blue-50 { background-color: #eff6ff !important; -webkit-print-color-adjust: exact; }
+            .bg-green-50 { background-color: #f0fdf4 !important; -webkit-print-color-adjust: exact; }
+        }
+
+        .footer-citation {
+            font-size: 0.7rem;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 0.5rem;
+            margin-top: 2rem;
+            width: 100%;
+            text-align: center;
+        }
+        
+        /* Sticky header para móvil */
+        .sticky-header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body class="p-2 md:p-8">
+
+    <div class="max-w-6xl mx-auto bg-white p-4 md:p-8 rounded-xl shadow-lg" id="printableArea">
+        
+        <!-- Header -->
+        <div class="border-b-2 border-gray-200 pb-4 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                <div>
+                    <h1 class="text-xl md:text-3xl font-extrabold text-gray-800 uppercase tracking-wider">
+                        <i class="fas fa-clipboard-user text-blue-600 mr-2"></i>Hoja del Evaluador
+                    </h1>
+                    <p class="text-sm text-gray-500">Evaluación Rotativa - Habilidades Socio-Emocionales</p>
+                </div>
+                <div class="mt-4 md:mt-0 text-xs bg-yellow-50 text-yellow-800 px-3 py-2 rounded border border-yellow-200">
+                    <i class="fas fa-info-circle mr-1"></i> <strong>Instrucción:</strong> Hoy TÚ eres el "profe". Evalúate a ti mismo y a tus compañeros con honestidad (0-4).
+                </div>
+            </div>
+
+            <!-- Datos de la Sesión -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Evaluador (Yo):</label>
+                    <input type="text" id="name_evaluator" class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm font-bold text-blue-700" placeholder="Tu Nombre">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Grupo / Clase:</label>
+                    <input type="text" class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm" placeholder="Ej. 2º ESO A - Grupo 3">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Fecha:</label>
+                    <input type="date" class="w-full bg-white border border-gray-300 rounded px-2 py-1 text-sm">
+                </div>
+            </div>
+
+            <!-- Nombres de Compañeros (Inputs ocultos visualmente en la tabla móvil pero necesarios para lógica) -->
+            <div class="grid grid-cols-3 gap-4 mt-2 px-1">
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase">Compañero 1:</label>
+                    <input type="text" id="name_p1" oninput="updateName('p1')" class="w-full border-b border-gray-200 text-sm focus:outline-none" placeholder="Nombre Comp. 1">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase">Compañero 2:</label>
+                    <input type="text" id="name_p2" oninput="updateName('p2')" class="w-full border-b border-gray-200 text-sm focus:outline-none" placeholder="Nombre Comp. 2">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-gray-400 uppercase">Compañero 3:</label>
+                    <input type="text" id="name_p3" oninput="updateName('p3')" class="w-full border-b border-gray-200 text-sm focus:outline-none" placeholder="Nombre Comp. 3">
+                </div>
+            </div>
+        </div>
+
+        <!-- Matrix -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead class="sticky-header">
+                    <tr>
+                        <th class="p-3 text-xs font-bold text-gray-500 uppercase w-1/4">Habilidades a Evaluar</th>
+                        <!-- Columna Autoevaluación -->
+                        <th class="p-2 text-center bg-blue-50 border-t-4 border-blue-500 w-[18%]">
+                            <div class="text-blue-800 font-bold text-sm mb-1"><i class="fas fa-user mr-1"></i> YO</div>
+                            <div class="text-[10px] text-blue-600 font-normal">(Autoevaluación)</div>
+                        </th>
+                        <!-- Columnas Coevaluación -->
+                        <th class="p-2 text-center bg-green-50 border-t-4 border-green-500 w-[18%]">
+                            <div class="text-green-800 font-bold text-sm mb-1 disp_name_p1">Comp. 1</div>
+                            <div class="text-[10px] text-green-600 font-normal">(Coevaluación)</div>
+                        </th>
+                        <th class="p-2 text-center bg-green-50 border-t-4 border-green-500 w-[18%]">
+                            <div class="text-green-800 font-bold text-sm mb-1 disp_name_p2">Comp. 2</div>
+                            <div class="text-[10px] text-green-600 font-normal">(Coevaluación)</div>
+                        </th>
+                        <th class="p-2 text-center bg-green-50 border-t-4 border-green-500 w-[18%]">
+                            <div class="text-green-800 font-bold text-sm mb-1 disp_name_p3">Comp. 3</div>
+                            <div class="text-[10px] text-green-600 font-normal">(Coevaluación)</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm text-gray-700" id="matrixBody">
+                    <!-- Rows generated by JS -->
+                </tbody>
+                <tfoot>
+                    <tr class="bg-gray-800 text-white font-bold">
+                        <td class="p-3 text-right">TOTAL (Máx 28):</td>
+                        <td class="p-3 text-center text-xl text-blue-300" id="total_self">0</td>
+                        <td class="p-3 text-center text-xl" id="total_p1">0</td>
+                        <td class="p-3 text-center text-xl" id="total_p2">0</td>
+                        <td class="p-3 text-center text-xl" id="total_p3">0</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+
+        <!-- Legend & Actions -->
+        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="text-xs text-gray-500 space-y-1">
+                <p class="font-bold mb-2">Leyenda de Puntuación:</p>
+                <div class="flex items-center gap-2"><span class="w-6 text-center border rounded bg-white">0</span> Nunca / No lo cumple</div>
+                <div class="flex items-center gap-2"><span class="w-6 text-center border rounded bg-white">1</span> Pocas veces</div>
+                <div class="flex items-center gap-2"><span class="w-6 text-center border rounded bg-white">2</span> A veces (Regular)</div>
+                <div class="flex items-center gap-2"><span class="w-6 text-center border rounded bg-white">3</span> Casi siempre (Muy bien)</div>
+                <div class="flex items-center gap-2"><span class="w-6 text-center border rounded bg-white">4</span> Siempre (Excelente/Modelo)</div>
+            </div>
+
+            <div class="flex flex-col items-center md:items-end justify-end space-y-2 no-print">
+                <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition w-full md:w-auto shadow">
+                    <i class="fas fa-save mr-2"></i> Guardar / Imprimir
+                </button>
+                <button onclick="resetMatrix()" class="text-red-500 text-xs hover:underline">
+                    Borrar todo y empezar de cero
+                </button>
+            </div>
+        </div>
+
+        <div class="footer-citation">
+            <p>Sánchez-Lorente, J. | Licencia Creative Commons CC BY-NC-ND 4.0 | Gemini 3.0, 2025</p>
+        </div>
+
+    </div>
+
+    <script>
+        const skills = [
+            { id: 's1', name: "Atención", desc: "Mantiene el foco en la tarea y explicaciones." },
+            { id: 's2', name: "Escucha Activa", desc: "Escucha sin interrumpir y asiente." },
+            { id: 's3', name: "Control Emocional", desc: "Gestiona la frustración o euforia adecuadamente." },
+            { id: 's4', name: "Esfuerzo y Persistencia", desc: "No se rinde ante la dificultad." },
+            { id: 's5', name: "Empatía", desc: "Entiende cómo se sienten los demás." },
+            { id: 's6', name: "Motivación y Respeto", desc: "Anima a compañeros (refuerzo positivo)." },
+            { id: 's7', name: "Liderazgo Responsable", desc: "Toma iniciativa ayudando al grupo." }
+        ];
+
+        const students = ['self', 'p1', 'p2', 'p3'];
+        let scores = {};
+
+        // Init Scores Data Structure
+        students.forEach(st => {
+            skills.forEach(sk => {
+                scores[`${st}_${sk.id}`] = 0;
+            });
+        });
+
+        // Generate Table Rows
+        const tbody = document.getElementById('matrixBody');
+        skills.forEach(skill => {
+            const tr = document.createElement('tr');
+            tr.className = "skill-row border-b border-gray-100";
+            
+            // Skill Name Column
+            const tdName = document.createElement('td');
+            tdName.className = "p-3 align-middle";
+            tdName.innerHTML = `
+                <div class="font-bold text-gray-800">${skill.name}</div>
+                <div class="text-[10px] text-gray-500 italic hidden md:block">${skill.desc}</div>
+            `;
+            tr.appendChild(tdName);
+
+            // Scoring Columns
+            students.forEach(st => {
+                const tdScore = document.createElement('td');
+                tdScore.className = st === 'self' ? "p-2 bg-blue-50/30 col-self text-center align-middle" : "p-2 col-peer text-center align-middle";
+                
+                const btnContainer = document.createElement('div');
+                btnContainer.className = "flex justify-center gap-1 flex-wrap";
+                
+                for(let i=0; i<=4; i++) {
+                    const btn = document.createElement('div');
+                    btn.className = "score-btn";
+                    btn.innerText = i;
+                    btn.onclick = () => setScore(st, skill.id, i, btnContainer);
+                    btnContainer.appendChild(btn);
+                }
+                
+                tdScore.appendChild(btnContainer);
+                tr.appendChild(tdScore);
+            });
+
+            tbody.appendChild(tr);
+        });
+
+        // Functions
+        function setScore(studentId, skillId, value, container) {
+            // Update Data
+            scores[`${studentId}_${skillId}`] = value;
+            
+            // Update UI
+            const btns = container.getElementsByClassName('score-btn');
+            for(let b of btns) {
+                b.classList.remove('selected');
+                if(parseInt(b.innerText) === value) b.classList.add('selected');
+            }
+
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            students.forEach(st => {
+                let total = 0;
+                skills.forEach(sk => {
+                    total += scores[`${st}_${sk.id}`];
+                });
+                const totalEl = document.getElementById(`total_${st}`);
+                totalEl.innerText = total;
+
+                // Color coding result
+                if (total < 14) totalEl.className = "p-3 text-center text-xl font-bold text-red-400";
+                else if (total < 21) totalEl.className = "p-3 text-center text-xl font-bold text-yellow-400";
+                else totalEl.className = "p-3 text-center text-xl font-bold text-green-400";
+                
+                // Keep blue for self specific
+                if(st === 'self' && total >= 21) totalEl.className = "p-3 text-center text-xl font-bold text-blue-300";
+            });
+        }
+
+        function updateName(id) {
+            const val = document.getElementById(`name_${id}`).value;
+            const displays = document.getElementsByClassName(`disp_name_${id}`);
+            for(let d of displays) {
+                d.innerText = val || (id === 'p1' ? 'Comp. 1' : id === 'p2' ? 'Comp. 2' : 'Comp. 3');
+            }
+        }
+
+        function resetMatrix() {
+            if(confirm("¿Borrar todas las puntuaciones?")) location.reload();
+        }
+    </script>
+</body>
+</html>

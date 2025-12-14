@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desafío de Clasificación: El Calentamiento</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Open+Sans:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f3f4f6;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* Header */
+        header {
+            background-color: #1f2937;
+            color: white;
+            padding: 0.5rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 60px;
+        }
+
+        /* Game Area */
+        #game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+            position: relative;
+        }
+
+        /* Card Dispenser Area */
+        .dispenser-area {
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .current-card {
+            background: white;
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            padding: 1rem 2rem;
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            cursor: grab;
+            z-index: 50;
+            width: 280px;
+            touch-action: none; /* Critical for mobile drag */
+            transition: transform 0.1s;
+        }
+        .current-card:active { cursor: grabbing; transform: scale(1.05); }
+
+        /* Timer Bar */
+        .timer-bar-bg {
+            width: 280px;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .timer-bar-fill {
+            height: 100%;
+            background: #ef4444;
+            width: 100%;
+            transition: width 1s linear;
+        }
+
+        /* Board - Phases Columns */
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .phase-column {
+            background: white;
+            border-radius: 8px;
+            border-top: 5px solid gray;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .phase-header {
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: bold;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            border-bottom: 1px solid #eee;
+        }
+
+        .slots-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0.25rem;
+            gap: 0.25rem;
+        }
+
+        .slot {
+            background-color: #f9fafb;
+            border: 1px dashed #d1d5db;
+            border-radius: 4px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            padding: 0 0.5rem;
+            font-size: 0.7rem;
+            color: #6b7280;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .slot.drag-over {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+            border-style: solid;
+        }
+
+        .slot-number {
+            font-weight: bold;
+            margin-right: 0.5rem;
+            color: #9ca3af;
+            width: 15px;
+        }
+
+        .filled-slot {
+            background-color: #e0f2fe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            padding-left: 5px;
+            font-weight: 600;
+            border-radius: 3px;
+        }
+
+        /* Colors for phases */
+        .col-p1 { border-color: #3b82f6; } /* Blue */
+        .col-p1 .phase-header { color: #1e40af; background: #eff6ff; }
+        
+        .col-p2 { border-color: #db2777; } /* Pink */
+        .col-p2 .phase-header { color: #be185d; background: #fdf2f8; }
+
+        .col-p3 { border-color: #16a34a; } /* Green */
+        .col-p3 .phase-header { color: #15803d; background: #f0fdf4; }
+
+        .col-p4 { border-color: #ca8a04; } /* Yellow */
+        .col-p4 .phase-header { color: #854d0e; background: #fefce8; }
+
+        /* Screens */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(31, 41, 55, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .hidden { display: none !important; }
+
+        /* Results Table */
+        .results-table {
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            color: #333;
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .results-table th { background: #e5e7eb; padding: 10px; text-align: left; }
+        .results-table td { padding: 8px; border-bottom: 1px solid #eee; }
+        .row-correct { background: #dcfce7; }
+        .row-partial { background: #fef3c7; }
+        .row-wrong { background: #fee2e2; }
+
+    </style>
+</head>
+<body>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="overlay">
+        <h1 class="text-4xl md:text-5xl font-black text-white mb-4 uppercase font-montserrat tracking-wider">
+            Desafío de Clasificación
+        </h1>
+        <p class="text-xl text-gray-300 mb-8 max-w-lg">
+            Tienes <strong>15 segundos</strong> por ejercicio.<br>
+            Arrastra cada tarjeta a su <strong>Fase</strong> y <strong>Número de Orden</strong> correcto.
+        </p>
+        <div class="bg-gray-800 p-4 rounded-lg text-left text-sm mb-8 space-y-2 border border-gray-600">
+            <p><i class="fas fa-star text-yellow-400"></i> <strong>1 Punto:</strong> Fase y Orden Correctos.</p>
+            <p><i class="fas fa-star-half-alt text-yellow-400"></i> <strong>0.5 Puntos:</strong> Fase Correcta, Orden Incorrecto.</p>
+            <p><i class="fas fa-times text-red-400"></i> <strong>0 Puntos:</strong> Fase Incorrecta o Tiempo Agotado.</p>
+        </div>
+        <button onclick="startGame()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-10 rounded-full text-xl transition transform hover:scale-105 shadow-lg shadow-blue-500/50">
+            ¡ESTOY LISTO!
+        </button>
+    </div>
+
+    <!-- End Screen -->
+    <div id="end-screen" class="overlay hidden">
+        <h2 class="text-3xl font-bold mb-2">Resultados Finales</h2>
+        <div class="text-5xl font-black text-yellow-400 mb-2"><span id="final-score">0</span> / 32</div>
+        <p class="text-sm text-gray-400 mb-4">Tiempo Total: <span id="total-time">00:00</span></p>
+        
+        <div class="results-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ejercicio</th>
+                        <th>Tu Respuesta</th>
+                        <th>Correcto</th>
+                        <th>Pts</th>
+                    </tr>
+                </thead>
+                <tbody id="results-body">
+                    <!-- JS fills this -->
+                </tbody>
+            </table>
+        </div>
+
+        <button onclick="location.reload()" class="mt-6 bg-white text-gray-900 font-bold py-2 px-6 rounded-full hover:bg-gray-200">
+            Jugar Otra Vez
+        </button>
+    </div>
+
+    <!-- Main Game UI -->
+    <header>
+        <div class="font-bold text-sm"><i class="fas fa-layer-group mr-2"></i> CLASIFICADOR DEL CALENTAMIENTO</div>
+        <div class="text-sm font-mono" id="cards-counter">1 / 32</div>
+    </header>
+
+    <div id="game-area">
+        
+        <!-- Card & Timer Area -->
+        <div class="dispenser-area">
+            <div id="drop-zone-source" class="relative w-full flex justify-center">
+                <!-- Card is injected here -->
+            </div>
+            <div class="timer-bar-bg">
+                <div id="timer-bar" class="timer-bar-fill"></div>
+            </div>
+            <div id="feedback-toast" class="absolute top-0 text-2xl font-bold opacity-0 transition-opacity duration-500"></div>
+        </div>
+
+        <!-- The Board -->
+        <div class="board">
+            <!-- Phase 1 -->
+            <div class="phase-column col-p1">
+                <div class="phase-header">Fase 1<br><span class="text-[10px]">Movilidad</span></div>
+                <div class="slots-container" id="container-p1">
+                    <!-- Slots generated by JS -->
+                </div>
+            </div>
+            <!-- Phase 2 -->
+            <div class="phase-column col-p2">
+                <div class="phase-header">Fase 2<br><span class="text-[10px]">Fuerza</span></div>
+                <div class="slots-container" id="container-p2">
+                </div>
+            </div>
+            <!-- Phase 3 -->
+            <div class="phase-column col-p3">
+                <div class="phase-header">Fase 3<br><span class="text-[10px]">Pliometría</span></div>
+                <div class="slots-container" id="container-p3">
+                </div>
+            </div>
+            <!-- Phase 4 -->
+            <div class="phase-column col-p4">
+                <div class="phase-header">Fase 4<br><span class="text-[10px]">Estiramientos</span></div>
+                <div class="slots-container" id="container-p4">
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATASET: 32 Exercises with strict phase and order ---
+        const exercisesDB = [
+            // Fase 1
+            { id: 1, name: "Tobillo", phase: 1, order: 1 },
+            { id: 2, name: "Rodilla", phase: 1, order: 2 },
+            { id: 3, name: "Cadera", phase: 1, order: 3 },
+            { id: 4, name: "Pelvis", phase: 1, order: 4 },
+            { id: 5, name: "Columna Vertebral", phase: 1, order: 5 },
+            { id: 6, name: "Muñeca-Codo", phase: 1, order: 6 },
+            { id: 7, name: "Hombros", phase: 1, order: 7 },
+            { id: 8, name: "Cuello", phase: 1, order: 8 },
+            // Fase 2
+            { id: 9, name: "Sentadilla", phase: 2, order: 1 },
+            { id: 10, name: "Zancada Frontal", phase: 2, order: 2 },
+            { id: 11, name: "Zancada Lateral", phase: 2, order: 3 },
+            { id: 12, name: "Peso-Muerto 1 Pierna", phase: 2, order: 4 },
+            { id: 13, name: "Plancha Escalador", phase: 2, order: 5 },
+            { id: 14, name: "Plancha Lat. Din.", phase: 2, order: 6 },
+            { id: 15, name: "Plancha Inv. Din.", phase: 2, order: 7 },
+            { id: 16, name: "Patada-Handstand", phase: 2, order: 8 },
+            // Fase 3
+            { id: 17, name: "Carrera rodillas arriba", phase: 3, order: 1 },
+            { id: 18, name: "Talones al culo", phase: 3, order: 2 },
+            { id: 19, name: "Jumping Jacks", phase: 3, order: 3 },
+            { id: 20, name: "Boxing foot-scissors", phase: 3, order: 4 },
+            { id: 21, name: "Supermario o Heidi", phase: 3, order: 5 },
+            { id: 22, name: "Salto lateral 1 pierna", phase: 3, order: 6 },
+            { id: 23, name: "Salto giro 180º", phase: 3, order: 7 },
+            { id: 24, name: "Rana", phase: 3, order: 8 },
+            // Fase 4
+            { id: 25, name: "Gemelos", phase: 4, order: 1 },
+            { id: 26, name: "Tibial Anterior", phase: 4, order: 2 },
+            { id: 27, name: "Cuádriceps", phase: 4, order: 3 },
+            { id: 28, name: "Abductores", phase: 4, order: 4 },
+            { id: 29, name: "Isquiosurales", phase: 4, order: 5 },
+            { id: 30, name: "Psoas ilíaco", phase: 4, order: 6 },
+            { id: 31, name: "Spiderman (Abductores)", phase: 4, order: 7 },
+            { id: 32, name: "Glúteos", phase: 4, order: 8 }
+        ];
+
+        // --- GAME STATE ---
+        let gameDeck = [];
+        let currentCardIndex = 0;
+        let userResponses = []; // Stores { exId, userPhase, userOrder, points }
+        let timerInterval;
+        let cardTimer;
+        let startTime;
+
+        // --- INIT ---
+        function initBoard() {
+            // Create 8 slots for each of the 4 phases
+            for(let p=1; p<=4; p++) {
+                const container = document.getElementById(`container-p${p}`);
+                container.innerHTML = '';
+                for(let s=1; s<=8; s++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    slot.dataset.phase = p;
+                    slot.dataset.order = s;
+                    slot.innerHTML = `<span class="slot-number">${s}</span>`;
+                    
+                    // Drag Events
+                    slot.addEventListener('dragover', handleDragOver);
+                    slot.addEventListener('dragleave', handleDragLeave);
+                    slot.addEventListener('drop', handleDrop);
+                    
+                    // Touch Events (Mobile) support requires more complex logic, 
+                    // simplifying to Click-to-Place for mobile is often better, 
+                    // but for this code we stick to standard HTML5 drag.
+                    
+                    container.appendChild(slot);
+                }
+            }
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            initBoard();
+            
+            // Shuffle Deck
+            gameDeck = [...exercisesDB].sort(() => Math.random() - 0.5);
+            currentCardIndex = 0;
+            userResponses = [];
+            startTime = new Date();
+            
+            loadNextCard();
+        }
+
+        function loadNextCard() {
+            if (currentCardIndex >= gameDeck.length) {
+                endGame();
+                return;
+            }
+
+            const ex = gameDeck[currentCardIndex];
+            document.getElementById('cards-counter').innerText = `${currentCardIndex + 1} / 32`;
+
+            // Render Card
+            const cardHTML = document.createElement('div');
+            cardHTML.className = 'current-card animate-pulse'; // removed pulse after load
+            cardHTML.draggable = true;
+            cardHTML.innerText = ex.name;
+            cardHTML.id = 'active-card';
+            
+            // Drag Start Event
+            cardHTML.addEventListener('dragstart', (e) => {
+                e.dataTransfer.setData('text/plain', JSON.stringify(ex));
+                cardHTML.classList.add('opacity-50');
+            });
+            
+            cardHTML.addEventListener('dragend', () => {
+                cardHTML.classList.remove('opacity-50');
+            });
+
+            const source = document.getElementById('drop-zone-source');
+            source.innerHTML = '';
+            source.appendChild(cardHTML);
+
+            // Start 6s Timer
+            resetBar();
+        }
+
+        function resetBar() {
+            const bar = document.getElementById('timer-bar');
+            bar.style.transition = 'none';
+            bar.style.width = '100%';
+            
+            // Force reflow
+            void bar.offsetWidth;
+
+            bar.style.transition = 'width 15s linear';
+            bar.style.width = '0%';
+
+            clearTimeout(cardTimer);
+            cardTimer = setTimeout(() => {
+                // Time's up!
+                recordResponse(gameDeck[currentCardIndex], 0, 0); // 0 phase means missed
+            }, 15000);
+        }
+
+        // --- DRAG & DROP HANDLERS ---
+        function handleDragOver(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            // If slot is full, ignore (or replace? prompt says consecutive, implies empty slots)
+            if(this.querySelector('.filled-slot')) return;
+
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            const userPhase = parseInt(this.dataset.phase);
+            const userOrder = parseInt(this.dataset.order);
+
+            // Visual feedback - Fill the slot
+            this.innerHTML = `<div class="filled-slot">${data.name}</div>`;
+            
+            // Record Data
+            recordResponse(data, userPhase, userOrder);
+        }
+
+        function recordResponse(exercise, uPhase, uOrder) {
+            clearTimeout(cardTimer); // Stop timer
+            
+            let points = 0;
+            
+            if (uPhase === exercise.phase) {
+                if (uOrder === exercise.order) {
+                    points = 1;
+                } else {
+                    points = 0.5;
+                }
+            } else {
+                points = 0;
+            }
+
+            userResponses.push({
+                exercise: exercise,
+                userPhase: uPhase,
+                userOrder: uOrder,
+                points: points
+            });
+
+            // Move to next
+            currentCardIndex++;
+            loadNextCard();
+        }
+
+        function endGame() {
+            const endTime = new Date();
+            const timeDiff = Math.floor((endTime - startTime) / 1000);
+            const minutes = Math.floor(timeDiff / 60);
+            const seconds = timeDiff % 60;
+            document.getElementById('total-time').innerText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+            let totalScore = 0;
+            const tbody = document.getElementById('results-body');
+            tbody.innerHTML = '';
+
+            userResponses.forEach(res => {
+                totalScore += res.points;
+                
+                const tr = document.createElement('tr');
+                
+                // Determine Row Class
+                if(res.points === 1) tr.className = 'row-correct';
+                else if(res.points === 0.5) tr.className = 'row-partial';
+                else tr.className = 'row-wrong';
+
+                // Format User Answer Text
+                let userText = res.userPhase === 0 ? "Tiempo Agotado" : `F${res.userPhase} - Pos.${res.userOrder}`;
+                let correctText = `F${res.exercise.phase} - Pos.${res.exercise.order}`;
+
+                tr.innerHTML = `
+                    <td><strong>${res.exercise.name}</strong></td>
+                    <td>${userText}</td>
+                    <td>${correctText}</td>
+                    <td class="font-bold">${res.points}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('final-score').innerText = totalScore;
+            
+            document.getElementById('end-screen').classList.remove('hidden');
+        }
+
+    </script>
+</body>
+</html>

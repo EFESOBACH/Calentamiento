@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plan de Autorregulación</title>
+    <!-- Tailwind CSS para estilos rápidos y modernos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fuente Google Fonts (Inter) para que coincida con estéticas modernas -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: transparent; /* Transparente para integrarse en eXeLearning */
+        }
+        
+        /* Animación suave para el botón */
+        .btn-dynamic {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .btn-dynamic:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.3), 0 4px 6px -2px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-dynamic:active {
+            transform: translateY(0);
+        }
+
+        /* Efecto de brillo sutil en el fondo */
+        .card-bg {
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+        }
+    </style>
+</head>
+<body class="p-4 flex justify-center w-full">
+
+    <!-- Tarjeta Principal: Copiar desde aquí para eXeLearning -->
+    <div class="card-bg w-full max-w-2xl rounded-2xl border border-blue-100 shadow-lg overflow-hidden relative group">
+        
+        <!-- Elemento decorativo superior (barra azul) -->
+        <div class="h-2 w-full bg-blue-600"></div>
+
+        <div class="p-6 md:p-8 flex flex-col md:flex-row items-center gap-6">
+            
+            <!-- Icono / Gráfico Ilustrativo -->
+            <div class="flex-shrink-0 bg-blue-50 p-4 rounded-full border border-blue-100">
+                <!-- SVG de Checklist/Planificación -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+            </div>
+
+            <!-- Contenido de Texto -->
+            <div class="flex-1 text-center md:text-left">
+                <h2 class="text-2xl font-extrabold text-gray-800 mb-2">
+                    Tu Plan de Autorregulación
+                </h2>
+                <p class="text-gray-600 text-sm md:text-base mb-4 leading-relaxed">
+                    Gestiona tu tiempo, organiza las actividades cooperativas y reflexiona sobre tu progreso en cada sesión. 
+                    <span class="font-semibold text-blue-600">¡Tú eres el dueño de tu aprendizaje!</span>
+                </p>
+                
+                <!-- Botón Dinámico -->
+                <a href="https://docs.google.com/spreadsheets/d/16kZPaN3v66JRktw6tCfwaMWV8304S3Ul3hdJP6rv5qg/edit?usp=drive_link" 
+                   target="_blank" 
+                   class="btn-dynamic inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-4 focus:ring-blue-300 w-full md:w-auto gap-2">
+                    
+                    <!-- Icono de hoja de cálculo -->
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2zm0 6a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z" clip-rule="evenodd" />
+                    </svg>
+                    
+                    Acceder a mi Hoja de Planificación
+                </a>
+                
+                <p class="mt-2 text-xs text-gray-400 italic">
+                    *Se abrirá en una nueva pestaña (Google Sheets)
+                </p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
