@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roadmap de Aprendizaje: Activación Corporal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&family=Open+Sans:wght@400;600&display=swap');
+        
+        body, html { font-family: 'Open Sans', sans-serif; height: 100%; margin: 0; background-color: #f3f4f6; }
+        h1, h2, h3 { font-family: 'Montserrat', sans-serif; }
+
+        /* Contenedor fluido */
+        #roadmap-container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem;
+        }
+
+        /* Tab Navigation */
+        .tab-btn {
+            transition: all 0.3s ease;
+            opacity: 0.6;
+            border-bottom: 4px solid transparent;
+        }
+        .tab-btn:hover { opacity: 0.8; }
+        .tab-btn.active { opacity: 1; transform: translateY(-2px); }
+
+        /* Colores Activos */
+        .tab-btn.active.phase-1 { border-color: #2563eb; color: #1e40af; } /* Azul */
+        .tab-btn.active.phase-2 { border-color: #db2777; color: #9d174d; } /* Rosa */
+        .tab-btn.active.phase-3 { border-color: #16a34a; color: #166534; } /* Verde */
+        .tab-btn.active.phase-4 { border-color: #ca8a04; color: #854d0e; } /* Amarillo */
+
+        /* Session Cards */
+        .session-card {
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            border-top: 5px solid #e5e7eb;
+        }
+        .session-card:hover { transform: translateY(-3px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+
+        /* Border colors per phase */
+        .border-p1 { border-top-color: #3b82f6; }
+        .border-p2 { border-top-color: #ec4899; }
+        .border-p3 { border-top-color: #22c55e; }
+        .border-p4 { border-top-color: #eab308; }
+
+        /* Final Challenge Special Card */
+        .final-challenge {
+            background: linear-gradient(135deg, #fffbeb 0%, #fff 100%);
+            border: 2px solid #fbbf24;
+        }
+
+        .method-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .content-section { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .content-section.active { display: grid; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .footer-citation {
+            font-size: 0.7rem;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 0.5rem;
+            margin-top: auto; /* Push to bottom */
+            width: 100%;
+            text-align: center;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+<body>
+
+<div id="roadmap-container">
+    
+    <!-- Header -->
+    <div class="text-center mb-6">
+        <h1 class="text-2xl md:text-4xl font-extrabold text-gray-800 uppercase tracking-tight">
+            <i class="fas fa-map-marked-alt text-blue-600 mr-2"></i>Tu Ruta de Aprendizaje
+        </h1>
+        <p class="text-sm md:text-base text-gray-600 mt-2 max-w-2xl mx-auto">
+            16 Sesiones para dominar la Activación Corporal y crecer como equipo.
+        </p>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="flex flex-wrap justify-center gap-2 mb-6 border-b border-gray-200 pb-2">
+        <button onclick="switchPhase(1)" id="tab-1" class="tab-btn phase-1 active px-4 py-2 font-bold text-sm md:text-base text-gray-500">
+            <i class="fas fa-sync-alt mr-1"></i> F1: Movilidad
+        </button>
+        <button onclick="switchPhase(2)" id="tab-2" class="tab-btn phase-2 px-4 py-2 font-bold text-sm md:text-base text-gray-500">
+            <i class="fas fa-dumbbell mr-1"></i> F2: Fuerza
+        </button>
+        <button onclick="switchPhase(3)" id="tab-3" class="tab-btn phase-3 px-4 py-2 font-bold text-sm md:text-base text-gray-500">
+            <i class="fas fa-angle-double-up mr-1"></i> F3: Pliometría
+        </button>
+        <button onclick="switchPhase(4)" id="tab-4" class="tab-btn phase-4 px-4 py-2 font-bold text-sm md:text-base text-gray-500">
+            <i class="fas fa-running mr-1"></i> F4: Estiramientos
+        </button>
+    </div>
+
+    <!-- CONTENT PHASE 1 -->
+    <div id="content-1" class="content-section active grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- S1 -->
+        <div class="session-card border-p1 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 1</span>
+                <div class="method-icon bg-blue-50 text-blue-600"><i class="fas fa-eye" title="Modelado"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Identificar y Reproducir</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Observar demostraciones e identificar los 8 movimientos para corregir postura.</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-blue-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Autoconciencia postural.</p>
+            </div>
+        </div>
+        <!-- S2 -->
+        <div class="session-card border-p1 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 2</span>
+                <div class="method-icon bg-blue-50 text-blue-600"><i class="fas fa-users" title="P. Guiada"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Perfeccionar la Técnica</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Practicar con infografía y recibir feedback de compañeros (coevaluación).</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-blue-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Respeto y Empatía.</p>
+            </div>
+        </div>
+        <!-- S3 -->
+        <div class="session-card border-p1 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-blue-100 text-blue-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 3</span>
+                <div class="method-icon bg-blue-50 text-blue-600"><i class="fas fa-user" title="P. Autónoma"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Interiorizar Secuencia</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Ejecutar sin ayuda docente. Demostrar autocontrol y ritmo constante.</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-blue-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Responsabilidad y Memoria.</p>
+            </div>
+        </div>
+        <!-- S4 -->
+        <div class="session-card border-p1 p-4 bg-blue-50">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-gray-800 text-white text-xs font-bold px-2 py-1 rounded">EVALUACIÓN</span>
+                <div class="method-icon bg-white text-gray-800"><i class="fas fa-clipboard-check" title="Evaluación"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Demostrar Dominio</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Ejecución fluida de la secuencia de 8 ejercicios de Movilidad.</p>
+            <div class="border-t border-gray-200 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-blue-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Control corporal eficiente.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT PHASE 2 -->
+    <div id="content-2" class="content-section grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- S5 -->
+        <div class="session-card border-p2 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-pink-100 text-pink-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 5</span>
+                <div class="method-icon bg-pink-50 text-pink-600"><i class="fas fa-eye"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Asimilar Técnica Fuerza</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Ejecución de autocargas. Activar musculatura para prevenir lesiones.</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-pink-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Coordinación y Equilibrio.</p>
+            </div>
+        </div>
+        <!-- S6 -->
+        <div class="session-card border-p2 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-pink-100 text-pink-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 6</span>
+                <div class="method-icon bg-pink-50 text-pink-600"><i class="fas fa-users"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Fuerza y Equilibrio</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Coevaluación en ejercicios complejos (plancha, sentadilla). Corregir pelvis.</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-pink-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Trabajo en equipo.</p>
+            </div>
+        </div>
+        <!-- S7 -->
+        <div class="session-card border-p2 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-pink-100 text-pink-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 7</span>
+                <div class="method-icon bg-pink-50 text-pink-600"><i class="fas fa-user"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Resistencia Muscular</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Secuencia independiente. Mantener calidad a pesar del cansancio.</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-pink-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Perseverancia.</p>
+            </div>
+        </div>
+        <!-- S8 -->
+        <div class="session-card border-p2 p-4 bg-pink-50">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-gray-800 text-white text-xs font-bold px-2 py-1 rounded">HITO MEDIO</span>
+                <div class="method-icon bg-white text-gray-800"><i class="fas fa-balance-scale"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Revisión y Autorregulación</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Autoevaluación con Diario de Seguimiento. Ejecución técnica Fases 1 y 2.</p>
+            <div class="border-t border-gray-200 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-pink-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Gestión emocional.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT PHASE 3 -->
+    <div id="content-3" class="content-section grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- S9 -->
+        <div class="session-card border-p3 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 9</span>
+                <div class="method-icon bg-green-50 text-green-600"><i class="fas fa-eye"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Máxima Intensidad</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Patrones de multisaltos explosivos. Aumentar FC y FR.</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-green-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Capacidad Cardiorrespiratoria.</p>
+            </div>
+        </div>
+        <!-- S10 -->
+        <div class="session-card border-p3 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 10</span>
+                <div class="method-icon bg-green-50 text-green-600"><i class="fas fa-users"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Coordinar Ritmo</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Mantener intensidad y ritmo con ayuda de compañeros.</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-green-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Autorregulación colectiva.</p>
+            </div>
+        </div>
+        <!-- S11 -->
+        <div class="session-card border-p3 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-green-100 text-green-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 11</span>
+                <div class="method-icon bg-green-50 text-green-600"><i class="fas fa-user"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Mantener Constancia</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Ejecutar secuencia completa sin ayuda. Superación del esfuerzo.</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-green-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Resiliencia.</p>
+            </div>
+        </div>
+        <!-- S12 -->
+        <div class="session-card border-p3 p-4 bg-green-50">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-gray-800 text-white text-xs font-bold px-2 py-1 rounded">EVALUACIÓN</span>
+                <div class="method-icon bg-white text-gray-800"><i class="fas fa-clipboard-check"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Valorar Capacidad</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Ejecución con intensidad máxima para aumentar temperatura corporal.</p>
+            <div class="border-t border-gray-200 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-green-500">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Lógica interna.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT PHASE 4 -->
+    <div id="content-4" class="content-section grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- S13 -->
+        <div class="session-card border-p4 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 13</span>
+                <div class="method-icon bg-yellow-50 text-yellow-600"><i class="fas fa-eye"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Rango de Movimiento</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Técnica de 8 estiramientos. No mantener posición final (dinámico).</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-yellow-600">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Flexibilidad funcional.</p>
+            </div>
+        </div>
+        <!-- S14 -->
+        <div class="session-card border-p4 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 14</span>
+                <div class="method-icon bg-yellow-50 text-yellow-600"><i class="fas fa-users"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Mejorar Flexibilidad</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Corregir para evitar rebotes bruscos. Activar grupos musculares.</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-yellow-600">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Cooperación.</p>
+            </div>
+        </div>
+        <!-- S15 -->
+        <div class="session-card border-p4 p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-yellow-100 text-yellow-800 text-xs font-bold px-2 py-1 rounded">SESIÓN 15</span>
+                <div class="method-icon bg-yellow-50 text-yellow-600"><i class="fas fa-user"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-800 mb-2">Activación Total</h3>
+            <p class="text-xs text-gray-600 mb-3 flex-grow">Ejecución de las 4 fases (32 ejercicios) de forma fluida y autónoma.</p>
+            <div class="border-t border-gray-100 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-yellow-600">Logro Clave:</p>
+                <p class="text-xs text-gray-500">Planificación.</p>
+            </div>
+        </div>
+        <!-- S16 -->
+        <div class="session-card final-challenge p-4">
+            <div class="flex justify-between items-start mb-2">
+                <span class="bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded shadow"><i class="fas fa-trophy mr-1"></i> FINAL</span>
+                <div class="method-icon bg-yellow-100 text-yellow-700"><i class="fas fa-handshake"></i></div>
+            </div>
+            <h3 class="font-bold text-gray-900 mb-2">Desafío y Negociación</h3>
+            <p class="text-xs text-gray-800 mb-3 flex-grow">
+                1. Ejecución perfecta de 32 ejercicios.<br>
+                2. Debate grupal para repartir la "bolsa de puntos" usando el Diario.
+            </p>
+            <div class="border-t border-yellow-200 pt-2 mt-auto">
+                <p class="text-[10px] uppercase font-bold text-yellow-700">Logro Clave:</p>
+                <p class="text-xs text-gray-700 font-bold">Madurez y Honestidad.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-citation">
+        <p>Sánchez-Lorente, J. | Licencia Creative Commons CC BY-NC-ND 4.0 | Gemini 3.0, 2025</p>
+    </div>
+
+</div>
+
+<script>
+    function switchPhase(phaseNum) {
+        // 1. Buttons
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        document.getElementById(`tab-${phaseNum}`).classList.add('active');
+
+        // 2. Content
+        const contents = document.querySelectorAll('.content-section');
+        contents.forEach(content => content.classList.remove('active'));
+        document.getElementById(`content-${phaseNum}`).classList.add('active');
+    }
+</script>
+
+</body>
+</html>

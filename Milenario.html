@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>¿Quién Quiere Ser Milenario?</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilos Base y Tipografía */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
+            overflow: hidden; /* Evitar scroll en modo app */
+            touch-action: manipulation; /* Mejorar respuesta táctil */
+        }
+
+        h1, h2, h3, .font-display {
+            font-family: 'Rajdhani', sans-serif;
+        }
+
+        /* Fondo Animado */
+        .bg-grid {
+            background-size: 50px 50px;
+            background-image: 
+                linear-gradient(to right, rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(99, 102, 241, 0.1) 1px, transparent 1px);
+            animation: moveGrid 20s linear infinite;
+        }
+
+        @keyframes moveGrid {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(50px); }
+        }
+
+        /* Botones y Efectos */
+        .btn-option {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-option:active {
+            transform: scale(0.98);
+        }
+
+        .btn-option::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 4px; height: 100%;
+            background: #3b82f6;
+            opacity: 0.5;
+        }
+
+        .correct {
+            background: linear-gradient(90deg, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0.9) 100%) !important;
+            border-color: #22c55e !important;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
+        }
+
+        .wrong {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0.9) 100%) !important;
+            border-color: #ef4444 !important;
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* Comodines */
+        .lifeline-btn:disabled {
+            filter: grayscale(100%);
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* Utilidades de Pantalla */
+        .screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            display: flex;
+            flex-direction: column;
+            transition: opacity 0.5s ease;
+        }
+
+        .hidden-screen {
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .active-screen {
+            opacity: 1;
+            pointer-events: auto;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="relative h-screen w-full bg-slate-900">
+
+    <!-- Fondo Grid Animado -->
+    <div class="absolute inset-0 bg-grid z-0 pointer-events-none"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent z-0 pointer-events-none"></div>
+
+    <!-- PANTALLA DE INICIO -->
+    <div id="start-screen" class="screen active-screen items-center justify-center p-6 text-center z-20">
+        <div class="mb-8 relative animate-pulse">
+            <div class="absolute -inset-1 bg-gradient-to-r from-blue-600 to-violet-600 rounded-full blur opacity-25"></div>
+            <div class="relative bg-slate-900 rounded-full p-6 border border-slate-700 shadow-2xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 text-blue-400 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </div>
+        </div>
+        
+        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 mb-2 drop-shadow-sm leading-tight">
+            QUIÉN QUIERE SER<br>MILENARIO
+        </h1>
+        <p class="text-slate-400 font-display font-bold tracking-[0.2em] text-lg mb-12 uppercase">Edición Educación Física</p>
+
+        <button onclick="startGame()" class="group relative w-full max-w-xs overflow-hidden rounded-2xl bg-blue-600 p-4 text-white shadow-2xl transition-all hover:bg-blue-500 active:scale-95">
+            <div class="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:animate-[shimmer_1s_infinite]"></div>
+            <span class="text-2xl font-display font-bold tracking-wider">JUGAR</span>
+        </button>
+        
+        <p class="mt-8 text-xs text-slate-500 font-mono">v2.0 • 2º ESO</p>
+    </div>
+
+    <!-- PANTALLA DE JUEGO -->
+    <div id="game-screen" class="screen hidden-screen z-20">
+        
+        <!-- Header: Barra de progreso y Marcador -->
+        <div class="w-full bg-slate-900/90 backdrop-blur-md border-b border-slate-800 p-4 pb-2">
+            <div class="flex justify-between items-end mb-2">
+                <div>
+                    <span class="text-xs text-slate-400 font-mono uppercase">Nivel</span>
+                    <div class="flex items-baseline gap-1">
+                        <span id="q-current" class="text-2xl font-display font-bold text-blue-400">1</span>
+                        <span class="text-sm text-slate-600 font-bold">/ 30</span>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <span class="text-xs text-slate-400 font-mono uppercase">Puntos</span>
+                    <div id="score-display" class="text-2xl font-display font-bold text-yellow-400">0</div>
+                </div>
+            </div>
+            <!-- Progress Bar -->
+            <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-gradient-to-r from-blue-500 to-purple-500 w-0 transition-all duration-500"></div>
+            </div>
+        </div>
+
+        <!-- Área Central: Pregunta -->
+        <div class="flex-1 flex flex-col items-center justify-center p-4 w-full max-w-2xl mx-auto overflow-y-auto">
+            
+            <!-- Badge de Tema -->
+            <div class="mb-4">
+                <span id="topic-badge" class="px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-xs font-bold text-blue-300 uppercase tracking-wider">
+                    Tema
+                </span>
+            </div>
+
+            <!-- Texto Pregunta -->
+            <div class="w-full bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-6 border border-slate-700 shadow-xl mb-6 relative group">
+                <div class="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl opacity-20 group-hover:opacity-40 transition duration-500 blur"></div>
+                <h2 id="question-text" class="relative text-xl md:text-2xl font-medium text-center text-white leading-relaxed">
+                    Cargando pregunta...
+                </h2>
+            </div>
+
+            <!-- Opciones -->
+            <div class="w-full grid gap-3">
+                <button onclick="selectAnswer(0)" id="opt-0" class="btn-option w-full p-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-xl text-left flex items-center group">
+                    <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-600 flex items-center justify-center mr-3 text-slate-400 font-display font-bold group-hover:text-white group-hover:border-blue-500 transition-colors">A</div>
+                    <span class="text-slate-200 text-sm md:text-base font-medium flex-1">Opción A</span>
+                </button>
+                <button onclick="selectAnswer(1)" id="opt-1" class="btn-option w-full p-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-xl text-left flex items-center group">
+                    <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-600 flex items-center justify-center mr-3 text-slate-400 font-display font-bold group-hover:text-white group-hover:border-blue-500 transition-colors">B</div>
+                    <span class="text-slate-200 text-sm md:text-base font-medium flex-1">Opción B</span>
+                </button>
+                <button onclick="selectAnswer(2)" id="opt-2" class="btn-option w-full p-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-xl text-left flex items-center group">
+                    <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-600 flex items-center justify-center mr-3 text-slate-400 font-display font-bold group-hover:text-white group-hover:border-blue-500 transition-colors">C</div>
+                    <span class="text-slate-200 text-sm md:text-base font-medium flex-1">Opción C</span>
+                </button>
+                <button onclick="selectAnswer(3)" id="opt-3" class="btn-option w-full p-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-xl text-left flex items-center group">
+                    <div class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-600 flex items-center justify-center mr-3 text-slate-400 font-display font-bold group-hover:text-white group-hover:border-blue-500 transition-colors">D</div>
+                    <span class="text-slate-200 text-sm md:text-base font-medium flex-1">Opción D</span>
+                </button>
+            </div>
+
+            <!-- Botón Siguiente (Flotante) -->
+            <button id="next-btn" onclick="nextQuestion()" class="mt-6 w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl font-display font-bold text-xl tracking-wider shadow-lg transform transition-all hover:-translate-y-1 hidden">
+                SIGUIENTE
+            </button>
+        </div>
+
+        <!-- Footer: Comodines -->
+        <div class="w-full bg-slate-900/90 border-t border-slate-800 p-4 pb-6 safe-area-bottom">
+            <div class="flex justify-center gap-6 max-w-md mx-auto">
+                <button id="lifeline-50" onclick="use5050()" class="lifeline-btn flex flex-col items-center gap-1 group">
+                    <div class="w-12 h-12 rounded-full bg-slate-800 border-2 border-indigo-500 flex items-center justify-center shadow-[0_0_15px_rgba(99,102,241,0.3)] group-active:scale-95 transition-all">
+                        <span class="font-display font-bold text-indigo-300">50:50</span>
+                    </div>
+                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Mitad</span>
+                </button>
+                
+                <button id="lifeline-audience" onclick="useAudience()" class="lifeline-btn flex flex-col items-center gap-1 group">
+                    <div class="w-12 h-12 rounded-full bg-slate-800 border-2 border-pink-500 flex items-center justify-center shadow-[0_0_15px_rgba(236,72,153,0.3)] group-active:scale-95 transition-all">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-300" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                        </svg>
+                    </div>
+                    <span class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Clase</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA FINAL -->
+    <div id="end-screen" class="screen hidden-screen items-center justify-center p-6 text-center z-20 bg-slate-900/95 backdrop-blur">
+        <div class="w-full max-w-md">
+            <h2 class="text-4xl font-display font-black text-white mb-2">RESULTADOS</h2>
+            <div class="my-8 relative">
+                <svg class="w-48 h-48 mx-auto transform -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#1e293b" stroke-width="10" />
+                    <circle id="score-circle" cx="50" cy="50" r="45" fill="none" stroke="#3b82f6" stroke-width="10" stroke-dasharray="283" stroke-dashoffset="283" stroke-linecap="round" class="transition-all duration-1000 ease-out" />
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                    <span id="final-score" class="text-5xl font-display font-black text-white">0</span>
+                    <span class="text-xs text-slate-400 uppercase tracking-widest font-bold">Puntos</span>
+                </div>
+            </div>
+            
+            <p id="final-msg" class="text-lg text-slate-300 font-medium mb-8">Mensaje final...</p>
+
+            <button onclick="restartGame()" class="w-full py-4 bg-white text-slate-900 rounded-xl font-display font-black text-xl tracking-wider shadow-lg hover:bg-slate-200 transition-colors">
+                JUGAR DE NUEVO
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL AUDIENCIA -->
+    <div id="audience-modal" class="fixed inset-0 bg-black/80 z-50 hidden flex items-center justify-center p-6 backdrop-blur-sm opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm p-6 shadow-2xl transform scale-95 transition-transform duration-300">
+            <h3 class="text-xl font-display font-bold text-white mb-6 text-center flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-pink-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
+                </svg>
+                Votación de la Clase
+            </h3>
+            <div id="audience-bars" class="space-y-4">
+                <!-- Barras inyectadas por JS -->
+            </div>
+            <button onclick="closeModal()" class="mt-8 w-full py-3 bg-slate-700 hover:bg-slate-600 rounded-xl font-bold text-slate-200">CERRAR</button>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        // Preguntas extraídas exactamente del markdown
+        const questions = [
+            { q: "¿Cuántas fases componen la estructura del Calentamiento General propuesto?", opts: ["2 Fases", "3 Fases", "4 Fases", "5 Fases"], ans: 2, topic: "Estructura" },
+            { q: "¿Cuál es la cantidad total de ejercicios que conforman el calentamiento completo?", opts: ["20 ejercicios", "32 ejercicios", "15 ejercicios", "40 ejercicios"], ans: 1, topic: "Estructura" },
+            { q: "¿Cuántos ejercicios se realizan en cada una de las fases?", opts: ["5 ejercicios", "10 ejercicios", "8 ejercicios", "4 ejercicios"], ans: 2, topic: "Estructura" },
+            { q: "¿Cuál es el nombre de la Fase 1 del calentamiento?", opts: ["Pliometría", "Movilidad Articular", "Estiramientos", "Fortalecimiento"], ans: 1, topic: "Fase 1" },
+            { q: "¿Qué cualidad física básica (CFB) se define como la capacidad de vencer una resistencia?", opts: ["Velocidad", "Flexibilidad", "Fuerza", "Resistencia"], ans: 2, topic: "CFB" },
+            { q: "¿Cuál de las siguientes es una Cualidad Motriz (CM) y no una CFB?", opts: ["Fuerza", "Resistencia", "Flexibilidad", "Equilibrio"], ans: 3, topic: "CM" },
+            { q: "El objetivo principal de la Fase 3 (Pliometría) es aumentar...", opts: ["La flexibilidad", "La relajación", "La temperatura y FC", "La fuerza estática"], ans: 2, topic: "Fase 3" },
+            { q: "¿Qué fase se centra en activar el CORE y la musculatura mediante autocargas?", opts: ["Fase 1", "Fase 2", "Fase 3", "Fase 4"], ans: 1, topic: "Fase 2" },
+            { q: "¿En qué fase buscamos aumentar el rango de movimiento funcional sin mantener la posición?", opts: ["Fase 1", "Fase 2", "Fase 3", "Fase 4"], ans: 3, topic: "Fase 4" },
+            { q: "Uno de los grandes beneficios del calentamiento para la salud mental es que funciona como...", opts: ["Ansiogénico natural", "Depresor del sistema", "Generador de fatiga", "Bloqueador de confianza"], ans: 0, topic: "Salud" },
+            // Medias
+            { q: "¿Cuál es el objetivo principal de la Fase 1: Movilidad Articular?", opts: ["Potencia de salto", "Lubricar articulaciones", "Sudar al máximo", "Estirar al máximo"], ans: 1, topic: "Fase 1" },
+            { q: "El ejercicio 'Anteversión y Retroversión pélvica' pertenece a la fase de...", opts: ["Pliometría", "Fortalecimiento", "Movilidad Articular", "Carrera"], ans: 2, topic: "Ejercicios" },
+            { q: "¿Qué ejercicio es característico de la Fase 2: Fortalecimiento?", opts: ["Trote suave", "Plancha Escalador", "Salto de 180º", "Estiramiento Psoas"], ans: 1, topic: "Ejercicios" },
+            { q: "La Fase 3 busca potencia explosiva. ¿Qué ejercicio es un ejemplo?", opts: ["Rotación de tobillos", "Zancada lateral", "Boxing foot-scissors", "Plancha isométrica"], ans: 2, topic: "Ejercicios" },
+            { q: "¿Qué distingue a los estiramientos de la Fase 4 de los pasivos?", opts: ["Duran 30s", "No se mantiene (Dinámicos)", "Sentados", "Solo brazos"], ans: 1, topic: "Fase 4" },
+            { q: "¿Cuál es la función del líquido sinovial estimulado en la Fase 1?", opts: ["Aumentar dolor", "Lubricar y nutrir", "Enfriar músculo", "Bloquear"], ans: 1, topic: "Fisiología" },
+            { q: "El ejercicio 'Spiderman' en la Fase 4 estira principalmente...", opts: ["Aductores y cadera", "Cuello", "Gemelos", "Dedos"], ans: 0, topic: "Ejercicios" },
+            { q: "¿Qué significa 'Cero Lag' en Entrenamiento Neuromuscular?", opts: ["Internet rápido", "Conexión cerebro-músculo", "Reacción lenta", "Sin cansancio"], ans: 1, topic: "Neuro" },
+            { q: "La combinación de CFB (Hardware) y CM (Software) mejora...", opts: ["El Control Motor", "Fuerza bruta", "Capacidad pulmonar", "Estética"], ans: 0, topic: "Conceptos" },
+            { q: "A nivel fisiológico, el calentamiento hace que los músculos sean...", opts: ["Más viscosos", "Menos elásticos", "Menos viscosos / Más elásticos", "Más fríos"], ans: 2, topic: "Fisiología" },
+            // Dificiles
+            { q: "Según la evidencia, ¿en qué porcentaje reduce este programa el riesgo de lesiones?", opts: ["10%", "20%", "36%", "50%"], ans: 2, topic: "Estadística" },
+            { q: "El ejercicio 'Salto con giro de 180º' pertenece a la Fase...", opts: ["Fase 1", "Fase 2", "Fase 3", "Fase 4"], ans: 2, topic: "Ejercicios" },
+            { q: "El ejercicio 'Zancada Lateral' se utiliza en la Fase 2 para...", opts: ["Fortalecimiento", "Relajación", "Movilidad", "Subir pulsaciones"], ans: 0, topic: "Ejercicios" },
+            { q: "¿Qué cualidad física básica NO se trabaja prioritariamente en este calentamiento?", opts: ["Fuerza", "Velocidad", "Resistencia (Larga)", "Flexibilidad"], ans: 2, topic: "CFB" },
+            { q: "¿Por qué es crucial la activación del CORE en la Fase 2?", opts: ["Estética", "Estabilidad central", "Respiración", "Altura"], ans: 1, topic: "Fase 2" },
+            { q: "El estiramiento de 'Psoas Ilíaco' (Fase 4) contrarresta...", opts: ["Fuerza brazos", "Acortamiento por sedentarismo", "Debilidad tobillos", "Dolor cabeza"], ans: 1, topic: "Salud" },
+            { q: "En la Fase 3, además de la Tª corporal, buscamos maximizar...", opts: ["FC y FR", "Relajación", "Control estático", "Concentración"], ans: 0, topic: "Fase 3" },
+            { q: "El entrenamiento neuromuscular convierte al calentamiento en...", opts: ["Pérdida de tiempo", "Escudo Anti-lesiones", "Hipertrofia", "Yoga"], ans: 1, topic: "Concepto" },
+            { q: "¿Cuál NO es un ejercicio de la Fase 1 (Movilidad)?", opts: ["Círculos brazos", "Anteversión Pélvica", "Skipping Ruso", "Rotación tobillos"], ans: 2, topic: "Ejercicios" },
+            { q: "Si comparamos el cuerpo con un PC, las Cualidades Motrices serían...", opts: ["Hardware", "Carcasa", "Software", "Fuente"], ans: 2, topic: "Metáfora" }
+        ];
+
+        // --- GAME LOGIC ---
+        let currentIdx = 0;
+        let score = 0;
+        let lifelines = { fifty: true, audience: true };
+        
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+
+        function startGame() {
+            switchScreen(startScreen, gameScreen);
+            currentIdx = 0;
+            score = 0;
+            lifelines = { fifty: true, audience: true };
+            document.getElementById('lifeline-50').disabled = false;
+            document.getElementById('lifeline-audience').disabled = false;
+            updateScore();
+            loadQuestion();
+        }
+
+        function switchScreen(from, to) {
+            from.classList.remove('active-screen');
+            from.classList.add('hidden-screen');
+            setTimeout(() => {
+                to.classList.remove('hidden-screen');
+                to.classList.add('active-screen');
+            }, 300);
+        }
+
+        function loadQuestion() {
+            const q = questions[currentIdx];
+            
+            // Textos
+            document.getElementById('q-current').innerText = currentIdx + 1;
+            document.getElementById('topic-badge').innerText = q.topic;
+            document.getElementById('question-text').innerText = q.q;
+            
+            // Barra de progreso
+            const percent = ((currentIdx) / 30) * 100;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+
+            // Opciones
+            for(let i=0; i<4; i++) {
+                const btn = document.getElementById(`opt-${i}`);
+                const span = btn.querySelector('span');
+                span.innerText = q.opts[i];
+                
+                // Reset estilos
+                btn.disabled = false;
+                btn.className = "btn-option w-full p-4 bg-slate-800 hover:bg-slate-750 border border-slate-700 rounded-xl text-left flex items-center group";
+                btn.style.opacity = "1";
+            }
+            
+            document.getElementById('next-btn').classList.add('hidden');
+        }
+
+        function selectAnswer(selectedIndex) {
+            const q = questions[currentIdx];
+            const selectedBtn = document.getElementById(`opt-${selectedIndex}`);
+            const correctBtn = document.getElementById(`opt-${q.ans}`);
+            
+            // Lock buttons
+            for(let i=0; i<4; i++) document.getElementById(`opt-${i}`).disabled = true;
+
+            if (selectedIndex === q.ans) {
+                // Correct
+                selectedBtn.classList.add('correct');
+                score += 100;
+                // Vibración (si es móvil)
+                if(navigator.vibrate) navigator.vibrate(50);
+            } else {
+                // Incorrect
+                selectedBtn.classList.add('wrong');
+                correctBtn.classList.add('correct'); // Show correct
+                if(navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            }
+
+            updateScore();
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentIdx++;
+            if (currentIdx < questions.length) {
+                loadQuestion();
+            } else {
+                endGame();
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('score-display').innerText = score;
+        }
+
+        function endGame() {
+            switchScreen(gameScreen, endScreen);
+            
+            // Animar círculo final
+            const maxScore = 3000;
+            const percentage = score / maxScore;
+            const dashOffset = 283 - (283 * percentage); // 283 es la circunferencia aprox de r=45
+            
+            setTimeout(() => {
+                document.getElementById('score-circle').style.strokeDashoffset = dashOffset;
+                document.getElementById('final-score').innerText = score;
+                
+                let msg = "";
+                if(score === 3000) msg = "¡ERES UN MILENARIO LEGENDARIO!";
+                else if(score > 2000) msg = "¡Impresionante! Nivel Experto.";
+                else if(score > 1000) msg = "Buen trabajo, pero repasa un poco más.";
+                else msg = "Ups... necesitas entrenar más.";
+                document.getElementById('final-msg').innerText = msg;
+            }, 500);
+        }
+
+        function restartGame() {
+            switchScreen(endScreen, startScreen);
+            // Reset circle
+            document.getElementById('score-circle').style.strokeDashoffset = 283;
+        }
+
+        // --- LIFELINES ---
+        function use5050() {
+            if(!lifelines.fifty) return;
+            lifelines.fifty = false;
+            document.getElementById('lifeline-50').disabled = true;
+
+            const q = questions[currentIdx];
+            let removed = 0;
+            let optionsToRemove = [0,1,2,3].filter(i => i !== q.ans);
+            
+            // Shuffle
+            optionsToRemove.sort(() => Math.random() - 0.5);
+            
+            // Remove 2
+            optionsToRemove.slice(0, 2).forEach(idx => {
+                const btn = document.getElementById(`opt-${idx}`);
+                btn.style.opacity = "0.2";
+                btn.disabled = true;
+            });
+        }
+
+        function useAudience() {
+            if(!lifelines.audience) return;
+            lifelines.audience = false;
+            document.getElementById('lifeline-audience').disabled = true;
+            
+            const q = questions[currentIdx];
+            const modal = document.getElementById('audience-modal');
+            const barsContainer = document.getElementById('audience-bars');
+            
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+                modal.querySelector('div').classList.add('scale-100');
+            }, 10);
+
+            // Generar porcentajes falsos
+            let percentages = [0,0,0,0];
+            let remaining = 100;
+            
+            // La correcta se lleva entre 50 y 80%
+            percentages[q.ans] = Math.floor(Math.random() * 30) + 50;
+            remaining -= percentages[q.ans];
+            
+            // Repartir resto
+            for(let i=0; i<4; i++) {
+                if(i !== q.ans) {
+                    if(remaining > 0) {
+                        let val = Math.floor(Math.random() * (remaining / 2));
+                        percentages[i] = val;
+                        remaining -= val;
+                    }
+                }
+            }
+            // Sumar resto al último que no sea la respuesta para que sume 100 exacto
+            let fixIdx = percentages.findIndex((p, i) => i !== q.ans);
+            percentages[fixIdx] += remaining;
+
+            barsContainer.innerHTML = '';
+            ['A','B','C','D'].forEach((char, i) => {
+                const isWinner = i === q.ans;
+                const colorClass = isWinner ? 'bg-blue-500' : 'bg-slate-600';
+                barsContainer.innerHTML += `
+                    <div class="flex items-center gap-3">
+                        <span class="text-slate-400 font-bold w-4">${char}</span>
+                        <div class="flex-1 h-3 bg-slate-700 rounded-full overflow-hidden">
+                            <div class="h-full ${colorClass} transition-all duration-1000 ease-out" style="width: 0%" data-width="${percentages[i]}%"></div>
+                        </div>
+                        <span class="text-white text-xs w-8 text-right font-mono">${percentages[i]}%</span>
+                    </div>
+                `;
+            });
+
+            // Animate bars
+            setTimeout(() => {
+                document.querySelectorAll('[data-width]').forEach(el => {
+                    el.style.width = el.getAttribute('data-width');
+                });
+            }, 100);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('audience-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.remove('scale-100');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+    </script>
+</body>
+</html>

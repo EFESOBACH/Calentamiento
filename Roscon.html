@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>El Rosco de la Activación - 2º ESO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Open+Sans:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #1e293b; /* Fondo oscuro tipo TV */
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Contenedor del Rosco */
+        .rosco-container {
+            position: relative;
+            width: 380px;
+            height: 380px;
+            margin-bottom: 2rem;
+        }
+
+        /* Letras individuales */
+        .letter-circle {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #3b82f6, #2563eb);
+            border: 2px solid #fff;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        /* Estados de las letras */
+        .letter-circle.active {
+            transform: scale(1.5);
+            background: linear-gradient(145deg, #f59e0b, #d97706); /* Amarillo */
+            z-index: 10;
+            box-shadow: 0 0 15px #f59e0b;
+        }
+        .letter-circle.correct {
+            background: linear-gradient(145deg, #22c55e, #16a34a); /* Verde */
+            border-color: #86efac;
+        }
+        .letter-circle.incorrect {
+            background: linear-gradient(145deg, #ef4444, #dc2626); /* Rojo */
+            border-color: #fca5a5;
+        }
+
+        /* Panel Central */
+        .center-panel {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 260px;
+            text-align: center;
+            z-index: 5;
+        }
+
+        .timer-box {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2rem;
+            font-weight: 900;
+            color: #fbbf24;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            background-color: rgba(0,0,0,0.5);
+            padding: 5px 15px;
+            border-radius: 999px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .definition-box {
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #1f2937;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            position: relative;
+            z-index: 20;
+        }
+
+        /* Animaciones */
+        @keyframes popIn {
+            0% { opacity: 0; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .pop-in { animation: popIn 0.3s ease-out forwards; }
+
+        /* Ajustes Mobile */
+        @media (max-width: 640px) {
+            .rosco-container { width: 300px; height: 300px; margin-bottom: 1rem; }
+            .letter-circle { width: 26px; height: 26px; font-size: 0.7rem; }
+            .definition-box { width: 95%; padding: 1rem; font-size: 0.9rem; }
+            h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Inicio -->
+    <div id="start-screen" class="fixed inset-0 bg-gray-900 z-50 flex flex-col items-center justify-center p-4 text-center">
+        <div class="mb-6 text-6xl text-blue-500 animate-bounce"><i class="fas fa-play-circle"></i></div>
+        <h1 class="text-4xl md:text-5xl font-black text-white mb-4 uppercase tracking-wider font-montserrat">El Rosco de la Activación</h1>
+        <p class="text-gray-300 max-w-md mb-8 text-lg">Demuestra lo que sabes sobre el calentamiento, las fases y el trabajo en equipo.<br><br>Tienes <strong>5 minutos</strong>.</p>
+        <button onclick="startGame()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-8 rounded-full text-xl transition transform hover:scale-105 shadow-lg shadow-blue-500/50">
+            ¡EMPEZAR JUEGO!
+        </button>
+    </div>
+
+    <!-- Pantalla de Resultados -->
+    <div id="end-screen" class="hidden fixed inset-0 bg-gray-900 z-50 flex flex-col items-center justify-center p-4 text-center">
+        <div id="end-icon" class="mb-6 text-6xl"></div>
+        <h2 id="end-title" class="text-4xl font-black text-white mb-2 uppercase"></h2>
+        <div class="flex gap-8 mb-8 text-2xl font-bold">
+            <div class="text-green-400"><i class="fas fa-check-circle"></i> <span id="final-score">0</span> Aciertos</div>
+            <div class="text-red-400"><i class="fas fa-times-circle"></i> <span id="final-errors">0</span> Fallos</div>
+        </div>
+        <p id="end-message" class="text-gray-300 mb-8"></p>
+        <button onclick="location.reload()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 px-8 rounded-full text-lg transition">
+            <i class="fas fa-redo mr-2"></i> Jugar de nuevo
+        </button>
+    </div>
+
+    <!-- Interfaz del Juego -->
+    <div id="game-ui" class="hidden flex flex-col items-center w-full h-full pt-4">
+        
+        <header class="w-full flex justify-between items-center px-6 mb-2">
+            <div class="text-sm font-bold text-gray-400">ACTIVACIÓN CORPORAL • 2º ESO</div>
+            <div class="flex gap-4 text-sm font-bold">
+                <span class="text-green-400"><span id="score-display">0</span> <i class="fas fa-check"></i></span>
+                <span class="text-red-400"><span id="error-display">0</span> <i class="fas fa-times"></i></span>
+            </div>
+        </header>
+
+        <!-- El Rosco -->
+        <div class="rosco-container" id="rosco">
+            <!-- Las letras se generan con JS -->
+            <div class="center-panel">
+                <div class="timer-box" id="timer">05:00</div>
+                <div class="text-xs text-gray-400 uppercase tracking-widest mt-1">Tiempo Restante</div>
+            </div>
+        </div>
+
+        <!-- Caja de Pregunta -->
+        <div class="definition-box pop-in">
+            <div class="flex justify-center mb-2">
+                <span id="letter-indicator" class="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Empieza por A</span>
+            </div>
+            <p id="question-text" class="text-lg md:text-xl font-bold mb-6 text-gray-800 leading-snug">
+                <!-- Pregunta aquí -->
+            </p>
+            
+            <div class="flex flex-col gap-3">
+                <input type="text" id="answer-input" class="w-full border-2 border-gray-300 rounded-lg px-4 py-3 text-lg focus:outline-none focus:border-blue-500 text-center uppercase font-bold text-gray-700" placeholder="Escribe tu respuesta..." autocomplete="off">
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="pasapalabra()" class="bg-blue-100 hover:bg-blue-200 text-blue-700 font-bold py-3 rounded-lg transition">
+                        PASAPALABRA
+                    </button>
+                    <button onclick="checkAnswer()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition shadow-md">
+                        ENVIAR
+                    </button>
+                </div>
+            </div>
+            <p id="feedback-msg" class="text-sm mt-3 font-bold h-5"></p>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA DEL JUEGO ---
+        const questionsData = [
+            { letter: "A", hint: "Empieza por A", def: "Tipo de ejercicio de fuerza en la Fase 2 usando solo el propio peso corporal.", ans: "AUTOCARGA" },
+            { letter: "B", hint: "Empieza por B", def: "Cantidad total de nota que consigue el grupo y que debéis repartir entre vosotros.", ans: "BOLSA DE PUNTOS" },
+            { letter: "C", hint: "Empieza por C", def: "Zona central del cuerpo (abdominales y lumbares) clave para la estabilidad.", ans: "CORE" },
+            { letter: "D", hint: "Empieza por D", def: "Herramienta donde registramos la autoevaluación y coevaluación diaria.", ans: "DIARIO" },
+            { letter: "E", hint: "Empieza por E", def: "Habilidad social para entender cómo se siente mi compañero y ayudarle.", ans: "EMPATIA" },
+            { letter: "F", hint: "Empieza por F", def: "Cualidad física básica trabajada en la Fase 2 para prevenir lesiones.", ans: "FUERZA" },
+            { letter: "G", hint: "Empieza por G", def: "Tipo de práctica (Sesiones 2, 6, 10, 14) donde nos corregimos mutuamente.", ans: "GUIADA" },
+            { letter: "H", hint: "Empieza por H", def: "Valor ético imprescindible al rellenar el diario para no mentir en la nota.", ans: "HONESTIDAD" },
+            { letter: "I", hint: "Empieza por I", def: "Factor clave en la Fase 3 (Pliometría), debe ser alta para subir el pulso.", ans: "INTENSIDAD" },
+            { letter: "J", hint: "Contiene la J", def: "Acción de explicar y argumentar por qué merecemos la nota ante el grupo.", ans: "JUSTIFICAR" },
+            { letter: "K", hint: "Contiene la K", def: "Ejercicio de técnica de carrera elevando rodillas, usado en Fase 3.", ans: "SKIPPING" },
+            { letter: "L", hint: "Empieza por L", def: "Daño físico que evitamos activando correctamente la musculatura.", ans: "LESION" },
+            { letter: "M", hint: "Empieza por M", def: "Fase de enseñanza donde el profesor explica y demuestra la técnica.", ans: "MODELADO" },
+            { letter: "N", hint: "Empieza por N", def: "El resultado final numérico tras la negociación de puntos.", ans: "NOTA" },
+            { letter: "Ñ", hint: "Contiene la Ñ", def: "Persona que tienes al lado en la práctica guiada y que te ayuda.", ans: "COMPAÑERO" },
+            { letter: "O", hint: "Empieza por O", def: "Lo que debemos mantener en la fila para evitar accidentes.", ans: "ORDEN" },
+            { letter: "P", hint: "Empieza por P", def: "Fase 3 del calentamiento compuesta por multisaltos explosivos.", ans: "PLIOMETRIA" },
+            { letter: "Q", hint: "Contiene la Q", def: "Capacidad de mantener la postura estable en apoyos monopodales.", ans: "EQUILIBRIO" },
+            { letter: "R", hint: "Empieza por R", def: "Valor que demuestras al traer ropa deportiva y cumplir tu rol.", ans: "RESPONSABILIDAD" },
+            { letter: "S", hint: "Empieza por S", def: "Ejercicio rey de la Fase 2 para fortalecer piernas.", ans: "SENTADILLA" },
+            { letter: "T", hint: "Empieza por T", def: "Aumento de calor corporal que buscamos al final de la Fase 3.", ans: "TEMPERATURA" },
+            { letter: "U", hint: "Contiene la U", def: "Fase de enseñanza donde el alumno trabaja solo, sin ayudas.", ans: "AUTONOMA" },
+            { letter: "V", hint: "Contiene la V", def: "Fase 1 del calentamiento centrada en las articulaciones.", ans: "MOVILIDAD" },
+            { letter: "W", hint: "Empieza o Contiene W", def: "Formato digital donde consultamos las infografías de la asignatura.", ans: "WEB" },
+            { letter: "X", hint: "Contiene la X", def: "Capacidad trabajada en la Fase 4 para aumentar rango de movimiento.", ans: "FLEXIBILIDAD" },
+            { letter: "Y", hint: "Contiene la Y", def: "Materiales visuales (infografías) usados para recordar ejercicios.", ans: "AYUDAS" },
+            { letter: "Z", hint: "Empieza por Z", def: "Ejercicio de fuerza: paso largo adelante o lateral doblando rodillas.", ans: "ZANCADA" }
+        ];
+
+        // --- LÓGICA DEL JUEGO ---
+        let currentIndex = 0;
+        let score = 0;
+        let errors = 0;
+        let timeLeft = 300; // 5 minutos
+        let timerInterval;
+        let pendingLetters = [...Array(questionsData.length).keys()]; // Índices pendientes
+        let currentStatus = new Array(questionsData.length).fill('pending'); // pending, correct, incorrect
+
+        // Elementos DOM
+        const roscoEl = document.getElementById('rosco');
+        const questionText = document.getElementById('question-text');
+        const letterIndicator = document.getElementById('letter-indicator');
+        const inputEl = document.getElementById('answer-input');
+        const feedbackEl = document.getElementById('feedback-msg');
+        
+        function initRosco() {
+            const radius = 160; // Radio del círculo
+            const total = questionsData.length;
+            const angleStep = (2 * Math.PI) / total;
+
+            // Limpiar rosco
+            roscoEl.innerHTML = `
+                <div class="center-panel">
+                    <div class="timer-box" id="timer">05:00</div>
+                    <div class="text-xs text-gray-400 uppercase tracking-widest mt-1">Tiempo Restante</div>
+                </div>
+            `;
+
+            questionsData.forEach((item, index) => {
+                const angle = index * angleStep - (Math.PI / 2); // Empezar arriba (-90deg)
+                const x = Math.cos(angle) * radius + 190 - 16; // Center X + offset - half width
+                const y = Math.sin(angle) * radius + 190 - 16; // Center Y + offset - half height
+
+                const div = document.createElement('div');
+                div.className = 'letter-circle';
+                div.id = `letter-${index}`;
+                div.innerText = item.letter;
+                div.style.left = `${x}px`;
+                div.style.top = `${y}px`;
+                roscoEl.appendChild(div);
+            });
+        }
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-ui').classList.remove('hidden');
+            document.getElementById('game-ui').classList.add('flex');
+            initRosco();
+            loadQuestion();
+            startTimer();
+            
+            // Focus input on enter key
+            inputEl.addEventListener("keypress", function(event) {
+                if (event.key === "Enter") checkAnswer();
+            });
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                const m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+                const s = (timeLeft % 60).toString().padStart(2, '0');
+                document.getElementById('timer').innerText = `${m}:${s}`;
+                
+                if(timeLeft <= 0) {
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            if (pendingLetters.length === 0) {
+                endGame(true);
+                return;
+            }
+
+            // Si llegamos al final de la lista, volver al principio de los pendientes
+            if (currentIndex >= questionsData.length) {
+                currentIndex = 0;
+            }
+
+            // Buscar el siguiente índice pendiente
+            while (currentStatus[currentIndex] !== 'pending') {
+                currentIndex++;
+                if (currentIndex >= questionsData.length) currentIndex = 0;
+            }
+
+            const data = questionsData[currentIndex];
+            
+            // UI Updates
+            questionText.innerText = data.def;
+            letterIndicator.innerText = data.hint;
+            inputEl.value = "";
+            inputEl.focus();
+            feedbackEl.innerText = "";
+
+            // Highlight active letter
+            document.querySelectorAll('.letter-circle').forEach(el => el.classList.remove('active'));
+            document.getElementById(`letter-${currentIndex}`).classList.add('active');
+        }
+
+        function normalizeString(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase().trim();
+        }
+
+        function checkAnswer() {
+            const userAns = normalizeString(inputEl.value);
+            const correctAns = normalizeString(questionsData[currentIndex].ans);
+            const letterEl = document.getElementById(`letter-${currentIndex}`);
+
+            if (userAns === correctAns) {
+                // Correcto
+                score++;
+                document.getElementById('score-display').innerText = score;
+                currentStatus[currentIndex] = 'correct';
+                letterEl.classList.remove('active');
+                letterEl.classList.add('correct');
+                feedbackEl.innerHTML = `<span class="text-green-600">¡CORRECTO!</span>`;
+                
+                // Remove from pending
+                pendingLetters = pendingLetters.filter(idx => idx !== currentIndex);
+                
+                currentIndex++;
+                setTimeout(loadQuestion, 800);
+            } else {
+                // Incorrecto
+                errors++;
+                document.getElementById('error-display').innerText = errors;
+                currentStatus[currentIndex] = 'incorrect';
+                letterEl.classList.remove('active');
+                letterEl.classList.add('incorrect');
+                feedbackEl.innerHTML = `<span class="text-red-600">¡FALLO! Era: ${questionsData[currentIndex].ans}</span>`;
+                
+                // Remove from pending
+                pendingLetters = pendingLetters.filter(idx => idx !== currentIndex);
+                
+                currentIndex++;
+                setTimeout(loadQuestion, 2500); // Wait longer to read correction
+            }
+        }
+
+        function pasapalabra() {
+            const letterEl = document.getElementById(`letter-${currentIndex}`);
+            letterEl.classList.remove('active');
+            
+            // Keep status pending, just move index
+            currentIndex++;
+            loadQuestion();
+        }
+
+        function endGame(finished) {
+            clearInterval(timerInterval);
+            document.getElementById('game-ui').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            document.getElementById('end-screen').classList.add('flex');
+
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-errors').innerText = errors;
+
+            const title = document.getElementById('end-title');
+            const msg = document.getElementById('end-message');
+            const icon = document.getElementById('end-icon');
+
+            if (score >= 24) {
+                icon.innerHTML = '<i class="fas fa-trophy text-yellow-400"></i>';
+                title.innerText = "¡MAESTRÍA ABSOLUTA!";
+                msg.innerText = "Eres un experto en activación corporal. ¡Excelente trabajo!";
+            } else if (score >= 14) {
+                icon.innerHTML = '<i class="fas fa-thumbs-up text-blue-400"></i>';
+                title.innerText = "¡BUEN TRABAJO!";
+                msg.innerText = "Conoces bien los conceptos, pero repasa los fallos.";
+            } else {
+                icon.innerHTML = '<i class="fas fa-book-reader text-red-400"></i>';
+                title.innerText = "NECESITAS REPASAR";
+                msg.innerText = "Vuelve a mirar las infografías y el diario de seguimiento.";
+            }
+        }
+    </script>
+</body>
+</html>
